@@ -13,3 +13,10 @@ NEWSPIDER_MODULE = 'seance_scrapy.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'seance_scrapy (+http://www.yourdomain.com)'
+
+ITEM_PIPELINES = [
+    'seance_scrapy.pipelines.SeanceScrapyPipeline'
+]
+
+# The amount of time (in secs) that the downloader should wait before downloading consecutive pages from the same spider.
+DOWNLOAD_DELAY = 1
