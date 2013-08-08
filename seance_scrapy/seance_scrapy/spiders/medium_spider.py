@@ -10,6 +10,10 @@ from seance_scrapy.items import MediumArticle
 
 import datetime
 
+from bs4 import BeautifulSoup
+import re
+from collections import Counter
+
 class MediumSpider(SitemapSpider):
     name = "medium"
     allowed_domains = ["medium.com"]
@@ -28,6 +32,24 @@ class MediumSpider(SitemapSpider):
         item['url'] = response.url
         item['id'] = hxs.select('//article/@data-post-id').extract()[0]
         item['title'] = hxs.select('//h1[@class="post-title"]/text()').extract()[0]
+
+        item['desc'] = hxs.select('//meta[@name="description"]/@content').extract()[0]
+        item['body'] = hxs.select("//div[contains(concat(' ', @class, ' '), ' body ')]").extract()[0]
+
+        # Use BeautifulSoup to get readable/visible text
+        item['body'] = BeautifulSoup(item['body']).getText()
+        # # Process the text to remove punctuation
+        # drop = u'.,?!@#$%^&*()_+-=\|/[]{}`~:;\'\"‘’—…“”'
+        # raw_text = raw_text.translate(dict((ord(c), u'') for c in drop))
+
+        # # Count the words in the text
+        # words = raw_text.lower().split()
+        # word_count = Counter(words)
+
+        # # Return the stats
+        # stats['word_counts'] = word_count
+        # stats['wc'] = sum(word_count.values())
+
 
         item['post_date'] = hxs.select('//div[@class="post-author-card"]//time[@class="post-date"]/text()').extract()[0]
         item['post_date'] = datetime.datetime.strptime(item['post_date'], "%B %d, %Y").date().strftime("%Y-%m-%d")

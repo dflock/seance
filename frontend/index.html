@@ -1,0 +1,128 @@
+<%
+    import MySQLdb as mdb
+    import MySQLdb.cursors
+
+    con = MySQLdb.connect(host = "localhost", user = "root", passwd = "dflp4root", db = "seance", cursorclass=MySQLdb.cursors.DictCursor)
+    cur = con.cursor()
+
+    cur.execute("select count(*) as value from authors")
+    author_count = cur.fetchone()['value']
+
+    cur.execute("select count(*) as value from articles")
+    article_count = cur.fetchone()['value']
+
+    cur.execute("select sum(min_read) as value from articles")
+    seconds = cur.fetchone()['value']
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    reading_time = "%d hrs, %d mins, %d secs" % (h, m, s)
+
+    cur.execute("select post_date, count(*) as value from articles group by post_date order by post_date asc;")
+    rows = cur.fetchall()
+
+    atricles_published_data = ''
+    for row in rows:
+        atricles_published_data += "{ date: '%s', value: %d }," % (row['post_date'], row['value'])
+
+
+    cur.execute("select author_id, author_name, author_url, count(*) as value from articles group by author_id, author_name having value > 1 order by value desc limit 10;")
+    rows = cur.fetchall()
+
+    prolific_authors = ''
+    for row in rows:
+        prolific_authors += '<tr><td><a href="https://medium.com%s">%s</a></td><td>%d</td></tr>' % (row['author_url'], row['author_name'], row['value'])
+%>
+
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Seance</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
+        <link rel="stylesheet" href="http://cdn.oesmith.co.uk/morris-0.4.3.min.css">
+        <link rel="stylesheet" href="css/main.css">
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+        <script src="http://cdn.oesmith.co.uk/morris-0.4.3.min.js"></script>
+    </head>
+    <body>
+        <div class="container">
+
+            <div class="hero-unit">
+                <img src="img/crystal_ball.png" alt="" width="128" style="float: left; margin: 15px 10px 0 0;">
+                <h1>Welcome to the Séance!</h1>
+                <p>Take a little peek inside medium.com - just for fun!</p>
+            </div>
+
+            <div class="row">
+                <div class="span4">
+                    <p>Total Authors:</p>
+                    <h2>${author_count}</h2>
+                </div>
+                <div class="span4">
+                    <p>Total Articles:</p>
+                    <h2>${article_count}</h2>
+                </div>
+                <div class="span4">
+                    <p>Total Reading Time:</p>
+                    <h2>${reading_time}</h2>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span12">
+                    <h2>Articles published, over time:</h2>
+                    <div id="articles-published-over-time" style="height: 250px;"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span12">
+                    <h2>Most prolific authors:</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Author</th>
+                                <th>Articles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${prolific_authors}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <hr>
+
+            <footer>
+                <p>Just for fun - totaly not worth suing me for :) Questions: <a href="duncan.lock@gmail.com">duncan.lock@gmail.com</a></p>
+            </footer>
+
+        </div> <!-- /container -->
+
+        <script>
+
+            new Morris.Line({
+              // ID of the element in which to draw the chart.
+              element: 'articles-published-over-time',
+              // Chart data records -- each entry in this array corresponds to a point on the chart.
+              data: [ ${atricles_published_data} ],
+              // The name of the data record attribute that contains x-values.
+              xkey: 'date',
+              // A list of names of data record attributes that contain y-values.
+              ykeys: ['value'],
+              // Labels for the ykeys -- will be displayed when you hover over the chart.
+              labels: ['Value']
+            });
+
+
+        </script>
+    </body>
+</html>

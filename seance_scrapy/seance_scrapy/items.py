@@ -11,6 +11,9 @@ class MediumArticle(Item):
     url = Field()
     post_date = Field()
 
+    desc = Field()
+    body = Field()
+
     author_id = Field()
     author_name = Field()
     author_url = Field()

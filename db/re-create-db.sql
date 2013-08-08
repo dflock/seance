@@ -13,6 +13,8 @@ CREATE TABLE `articles` (
   `title` text DEFAULT NULL,
   `url` text DEFAULT NULL,
   `post_date` date DEFAULT NULL,
+  `desc` text DEFAULT NULL,
+  `body` text DEFAULT NULL,
   `author_id` varchar(20) DEFAULT NULL,
   `author_name` text DEFAULT NULL,
   `author_url` text DEFAULT NULL,

@@ -30,10 +30,10 @@ class SeanceScrapyPipeline(object):
         if result:
             log.msg("Item already stored in db: %s" % item['id'], level=log.DEBUG)
         else:
-            tx.execute("insert into articles (id, title, url, post_date, author_id, author_name, author_url, min_read, category_slug, category_name) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                (item['id'], item['title'], item['url'], item['post_date'], item['author_id'], item['author_name'], item['author_url'], item['min_read'], item['category_slug'], item['category_name'])
+            tx.execute("insert into articles (id, title, url, post_date, desc, body, author_id, author_name, author_url, min_read, category_slug, category_name) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (item['id'], item['title'], item['url'], item['post_date'], item['desc'], item['body'], item['author_id'], item['author_name'], item['author_url'], item['min_read'], item['category_slug'], item['category_name'])
             )
-            log.msg("Item stored in db: %s" % item, level=log.DEBUG)
+            log.msg("Item stored in db: %s" % item['id'], level=log.DEBUG)
 
 
     def handle_error(self, e):
