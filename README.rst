@@ -17,6 +17,11 @@ Scrape medium.com to compile and display some data about activity on the site. I
 
 It uses `scrapy <http://scrapy.org/>`_ for the crawling, `pygreen <http://pygreen.neoname.eu/>`_ to generate the static frontend page and MySQL to store everything.
 
+Frontend
+---------
+
+The interesting bit! See the results here: http://dflock.github.io/seance/
+
 Running It
 -----------
 
@@ -58,7 +63,8 @@ Rewrite crawler & break into two parts:
   - Also needs to record a list of sitemap files, along with a timestamp
 - Another that works through that list and crawls the articles, records the stats & updates the last_crawled timestamp
 
-There are also some other minor issues:
+Other minor issues:
+^^^^^^^^^^^^^^^^^^^^^
 
 - Add information on number of comments
 - I couldn't find anything in the article markup to specify the language the article is written in - maybe have another look?
