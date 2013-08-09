@@ -3,6 +3,11 @@ Welcome to the Séance!
 
 Taking a little peek behind the curtain at medium.com - Just for fun.
 
+Frontend
+---------
+
+The interesting bit! See the results here: http://dflock.github.io/seance/
+
 Features
 ----------
 
@@ -16,11 +21,6 @@ Scrape medium.com to compile and display some data about activity on the site. I
 - Word Frequency by Word Length
 
 It uses `scrapy <http://scrapy.org/>`_ for the crawling, `pygreen <http://pygreen.neoname.eu/>`_ to generate the static frontend page and MySQL to store everything.
-
-Frontend
----------
-
-The interesting bit! See the results here: http://dflock.github.io/seance/
 
 Running It
 -----------
