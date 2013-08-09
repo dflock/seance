@@ -63,6 +63,8 @@ Rewrite crawler & break into two parts:
   - Also needs to record a list of sitemap files, along with a timestamp
 - Another that works through that list and crawls the articles, records the stats & updates the last_crawled timestamp
 
+Once this is done, re-run the crawl and rebuild everything.
+
 Other minor issues:
 ^^^^^^^^^^^^^^^^^^^^^
 
