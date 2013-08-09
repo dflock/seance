@@ -55,7 +55,7 @@ Rewrite crawler & break into two parts:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - One that crawls the medium.com sitemap.xml tree and records a list of article urls in the db, along with a last_crawled timestamp
-    - Also needs to record a list of sitemap files, along with a timestamp
+  - Also needs to record a list of sitemap files, along with a timestamp
 - Another that works through that list and crawls the articles, records the stats & updates the last_crawled timestamp
 
 There are also some other minor issues:
