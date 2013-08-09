@@ -69,5 +69,6 @@ Other minor issues:
 ^^^^^^^^^^^^^^^^^^^^^
 
 - Add information on number of comments
+- Sort out the various unicode issues, especially in the frontend output.
 - I couldn't find anything in the article markup to specify the language the article is written in - maybe have another look?
 - The XPath for importing categories isn't working.
