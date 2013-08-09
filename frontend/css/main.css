@@ -1,22 +1,80 @@
+body {
+	margin-top: 20px;
+}
+
+.hero-unit {
+	padding-top: 30px;
+}
+.hero-unit img {
+	width: 128px;
+	float: left;
+	margin: 15px 10px 0 0;
+}
+
+sup {
+	top: 0.1em;
+	font-size: 130%;
+	font-weight: bold;
+	color: #aaa;
+}
 
 
-/* ==========================================================================
-   Author's custom styles
-   ========================================================================== */
+/*
 
+	Fork Me on GitHub Ribbon
 
+ */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*#forkongithub a{
+	background: #000;
+	color: #fff;
+	text-decoration: none;
+	font-family: arial, sans-serif;
+	text-align: center;
+	font-weight: bold;
+	padding: 5px 40px;
+	font-size: 1rem;
+	line-height: 2rem;
+	position: relative;
+	transition: 0.5s;
+}
+#forkongithub a:hover{
+	background:#555;
+	color: #fff;
+}
+#forkongithub a::before,
+#forkongithub a::after{
+	content: "";
+	width: 100%;
+	display: block;
+	position: absolute;
+	top: 1px;
+	left: 0;
+	height: 1px;
+	background: #fff;
+}
+#forkongithub a::after{
+	bottom: 1px;
+	top: auto;
+}
+@media screen and (min-width:800px){
+	#forkongithub{
+		position: absolute;
+		display: block;
+		top: 0;
+		right: 0;
+		width: 200px;
+		overflow: hidden;
+		height: 200px;
+	}
+	#forkongithub a{
+		width: 200px;
+		position: absolute;
+		top: 60px;
+		right: -60px;
+		transform:rotate(45deg);
+		-webkit-transform:rotate(45deg);
+		box-shadow: 3px 3px 8px rgba(0,0,0,0.8);
+	}
+}
+*/

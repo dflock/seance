@@ -19,4 +19,4 @@ ITEM_PIPELINES = [
 ]
 
 # The amount of time (in secs) that the downloader should wait before downloading consecutive pages from the same spider.
-DOWNLOAD_DELAY = 1
+DOWNLOAD_DELAY = 2

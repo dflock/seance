@@ -1,44 +1,155 @@
 <%
+
+    #
+    #
+    # This code extracts all the data from the database required to build this page and preps it ready for use below.
+    #
+    #
+
+    # Setup DB connection
     import MySQLdb as mdb
     import MySQLdb.cursors
 
-    con = MySQLdb.connect(host = "localhost", user = "root", passwd = "dflp4root", db = "seance", cursorclass=MySQLdb.cursors.DictCursor)
+    con = MySQLdb.connect(host = "localhost", user = "root", passwd = "dflp4root", db = "seance", cursorclass=MySQLdb.cursors.DictCursor, charset='utf8', use_unicode=True)
     cur = con.cursor()
 
-    cur.execute("select count(*) as value from authors")
-    author_count = cur.fetchone()['value']
+    # Get the basic counts for the top section
+    cur.execute("select count(distinct author_name) as value from articles")
+    author_count = '{:,}'.format(cur.fetchone()['value'])
 
     cur.execute("select count(*) as value from articles")
-    article_count = cur.fetchone()['value']
+    article_count = '{:,}'.format(cur.fetchone()['value'])
 
-    cur.execute("select sum(min_read) as value from articles")
+    # Figure out how long it would take to read everything on medium
+    cur.execute("select sum(min_read) * 60 as value from articles")
     seconds = cur.fetchone()['value']
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
-    reading_time = "%d hrs, %d mins, %d secs" % (h, m, s)
+    d, h = divmod(h, 24)
+    reading_time = "%d days, %d hrs, %d mins" % (d, h, m)
+
+    cur.execute("select sum(word_count) as value from articles")
+    word_count = '{:,}'.format(cur.fetchone()['value'])
+
+    cur.execute("select avg(word_count) as value from articles")
+    avg_word_count = '{0:.2f}'.format(cur.fetchone()['value'])
+
+    #
+    # Get the data for the number of articles published over time section
+    #
+    cur.execute("select post_date, count(*) as value from articles where year(post_date) = 2013 and month(post_date) > 4 group by post_date order by post_date asc;")
+    rows = cur.fetchall()
+    articles_published_data = ''
+    for row in rows:
+        articles_published_data += "{ date: '%s', value: %d }," % (row['post_date'], row['value'])
 
     cur.execute("select post_date, count(*) as value from articles group by post_date order by post_date asc;")
     rows = cur.fetchall()
-
-    atricles_published_data = ''
+    articles_published_data_all_time = ''
     for row in rows:
-        atricles_published_data += "{ date: '%s', value: %d }," % (row['post_date'], row['value'])
+        articles_published_data_all_time += "{ date: '%s', value: %d }," % (row['post_date'], row['value'])
 
+    cur.execute("select year(post_date) as year, count(*) as value from articles group by year(post_date) order by post_date asc;")
+    rows = cur.fetchall()
+    articles_published_by_year = ''
+    for row in rows:
+        articles_published_by_year += "{ year: '%s', value: %d }," % (row['year'], row['value'])
 
+    cur.execute("select dayofweek(post_date), dayname(post_date) as day, count(*) as value from articles group by dayofweek(post_date), dayname(post_date) order by dayofweek(post_date) asc;")
+    rows = cur.fetchall()
+    articles_published_by_weekday = ''
+    for row in rows:
+        articles_published_by_weekday += "{ day: '%s', value: %d }," % (row['day'], row['value'])
+
+    #
+    # Get the data for the prolific authors section
+    #
     cur.execute("select author_id, author_name, author_url, count(*) as value from articles group by author_id, author_name having value > 1 order by value desc limit 10;")
     rows = cur.fetchall()
-
-    prolific_authors = ''
+    author_articles = ''
     for row in rows:
-        prolific_authors += '<tr><td><a href="https://medium.com%s">%s</a></td><td>%d</td></tr>' % (row['author_url'], row['author_name'], row['value'])
+        author_articles += '<tr><td><a href="https://medium.com%s">%s</a></td><td>%d</td></tr>' % (row['author_url'], row['author_name'].encode('ascii', 'xmlcharrefreplace'), row['value'])
+
+    cur.execute("select author_id, author_name, author_url, sum(word_count) as value from articles group by author_id, author_name having value > 10000 order by value desc limit 10;")
+    rows = cur.fetchall()
+    author_words = ''
+    for row in rows:
+        # TODO: This does funky things with unicode author_names - figure out why & fix.
+        # author_words += '{ label: "%s", value: %d },' % (row['author_name'].encode('ascii', 'xmlcharrefreplace').replace("'", ''), row['value'])
+        author_words += '<tr><td><a href="https://medium.com%s">%s</a></td><td>%s</td></tr>' % (row['author_url'], row['author_name'].encode('ascii', 'xmlcharrefreplace'), '{:,}'.format(row['value']))
+
+
+    cur.execute("select author_id, author_name, author_url, sum(min_read) * 60 as value from articles group by author_id, author_name order by value desc limit 10;")
+    rows = cur.fetchall()
+    author_time = ''
+    for row in rows:
+        # TODO: This does funky things with unicode author_names - figure out why & fix.
+        m, s = divmod(row['value'], 60)
+        h, m = divmod(m, 60)
+        author_reading_time = "%dh %dm" % (h, m)
+        author_time += '<tr><td><a href="https://medium.com%s">%s</a></td><td>%s</td></tr>' % (row['author_url'], row['author_name'].encode('ascii', 'xmlcharrefreplace'), author_reading_time)
+
+    cur.execute("select author_url, author_name, post_date, title, url from articles order by post_date asc limit 1;")
+    first_rows = cur.fetchall()
+    cur.execute("select author_url, author_name, post_date, title, url from articles order by post_date desc limit 1;")
+    last_rows = cur.fetchall()
+    first_last = ''
+    for row in first_rows:
+        # TODO: This does funky things with unicode author_names - figure out why & fix.
+        first_last += '<tr><td>%s</td><td><a href="https://medium.com%s">%s</a></td><td><a href="%s">%s</a></td></tr>' % (row['post_date'], row['author_url'], row['author_name'], row['url'], row['title'])
+    for row in last_rows:
+        # TODO: This does funky things with unicode author_names - figure out why & fix.
+        first_last += '<tr><td>%s</td><td><a href="https://medium.com%s">%s</a></td><td><a href="%s">%s</a></td></tr>' % (row['post_date'], row['author_url'], row['author_name'], row['url'], row['title'])
+
+    #
+    # Word frequency stuff
+    #
+    cur.execute("select word, freq from word_frequency order by freq desc limit 10;")
+    rows = cur.fetchall()
+    word_cloud = ''
+    for row in rows:
+        word_cloud += '<tr><td>%s</td><td>%s</td></tr>' % (row['word'], '{:,}'.format(row['freq']))
+
+    cur.execute("select word, freq from word_frequency where length between 5 and 7 order by freq desc limit 10;")
+    rows = cur.fetchall()
+    word_cloud_medium = ''
+    for row in rows:
+        word_cloud_medium += '<tr><td>%s</td><td>%s</td></tr>' % (row['word'], '{:,}'.format(row['freq']))
+
+    cur.execute("select word, freq from word_frequency where length > 7 order by freq desc limit 10;")
+    rows = cur.fetchall()
+    word_cloud_long = ''
+    for row in rows:
+        word_cloud_long += '<tr><td>%s</td><td>%s</td></tr>' % (row['word'], '{:,}'.format(row['freq']))
+
+    cur.execute("select word, freq from word_frequency where length > 10 order by freq desc limit 10;")
+    rows = cur.fetchall()
+    word_cloud_vlong = ''
+    for row in rows:
+        word_cloud_vlong += '<tr><td>%s</td><td>%s</td></tr>' % (row['word'], '{:,}'.format(row['freq']))
+
+
+    cur.execute("select word, freq from word_frequency where length > 20 order by freq desc limit 10;")
+    rows = cur.fetchall()
+    word_cloud_vvlong = ''
+    for row in rows:
+        word_cloud_vvlong += '<tr><td>%s</td><td>%s</td></tr>' % (row['word'], '{:,}'.format(row['freq']))
+
+
+    cur.execute("select length, sum(freq) as value from word_frequency group by length order by length asc;")
+    rows = cur.fetchall()
+    word_freq_by_length = ''
+    for row in rows:
+        word_freq_by_length += "{ label: '%d chars', value: %d }," % (row['length'], row['value'])
+
 %>
 
 <!DOCTYPE html>
-<html class="no-js">
+<html>
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Seance</title>
+        <title>Seance - Taking a little peek behind the curtain at medium.com</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
@@ -55,36 +166,92 @@
         <div class="container">
 
             <div class="hero-unit">
-                <img src="img/crystal_ball.png" alt="" width="128" style="float: left; margin: 15px 10px 0 0;">
+                <img src="img/crystal_ball.png" alt="" />
                 <h1>Welcome to the Séance!</h1>
-                <p>Take a little peek inside medium.com - just for fun!</p>
+                <p>Taking a little peek behind the curtain at medium.com <sup>*</sup></p>
             </div>
 
             <div class="row">
-                <div class="span4">
+                <div class="span2">
                     <p>Total Authors:</p>
-                    <h2>${author_count}</h2>
+                    <h3>${author_count}</h3>
                 </div>
-                <div class="span4">
+                <div class="span2">
                     <p>Total Articles:</p>
-                    <h2>${article_count}</h2>
+                    <h3>${article_count}</h3>
+                </div>
+                <div class="span2">
+                    <p>Total Words:</p>
+                    <h3>${word_count}</h3>
+                </div>
+                <div class="span2">
+                    <p>Avg. Words/Article:</p>
+                    <h3>${avg_word_count}</h3>
                 </div>
                 <div class="span4">
                     <p>Total Reading Time:</p>
-                    <h2>${reading_time}</h2>
+                    <h3>${reading_time}</h3>
                 </div>
             </div>
 
             <div class="row">
                 <div class="span12">
-                    <h2>Articles published, over time:</h2>
+                    <h2>Articles published over time:</h2>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span12">
+                    <p>Since 2013-05:</p>
                     <div id="articles-published-over-time" style="height: 250px;"></div>
                 </div>
             </div>
 
             <div class="row">
                 <div class="span12">
+                    <p>All Time:</p>
+                    <div id="articles-published-all-time" style="height: 100px;"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span4">
+                    <p>By Year:</p>
+                    <div id="articles-published-by-year" style="height: 250px;"></div>
+                </div>
+                <div class="span8">
+                    <p>By Day of Week:</p>
+                    <div id="articles-published-by-weekday" style="height: 250px;"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span12">
+                    <p>First &amp; Last:</p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Author</th>
+                                <th>Article</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${first_last}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span12">
                     <h2>Most prolific authors:</h2>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span4">
+                    <h3>By Articles Published:</h3>
                     <table class="table">
                         <thead>
                             <tr>
@@ -93,16 +260,150 @@
                             </tr>
                         </thead>
                         <tbody>
-                            ${prolific_authors}
+                            ${author_articles}
                         </tbody>
                     </table>
+                </div>
+                <div class="span4">
+                    <h3>By Words Published:</h3>
+                    <div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Author</th>
+                                    <th>Words</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${author_words}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="span4">
+                    <h3>By Time to Read:</h3>
+                    <div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Author</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${author_time}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span12">
+                    <h2>Most Popular Words:</h2>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span4">
+                    <p>All words:</p>
+                    <div class="word-cloud">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Word</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${word_cloud}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="span4">
+                    <p>Medium Words (5-7 chars):</p>
+                    <div class="word-cloud">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Word</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${word_cloud_medium}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="span4">
+                    <p>Long Words (> 7 chars):</p>
+                    <div class="word-cloud">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Word</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${word_cloud_long}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span4">
+                    <p>V. Long Words (> 10 chars):</p>
+                    <div class="word-cloud">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Word</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${word_cloud_vlong}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="span4">
+                    <p>Danke, Deutschland: (> 20 chars):</p>
+                    <div class="word-cloud">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Word</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${word_cloud_vvlong}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="span4">
+                    <p>Word Frequency by Length:</p>
+                    <div id="word-frequency-by-length" style="height: 350px;"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span11 alert alert-info">
+                  <strong>Please Note:</strong> This currently doesn't update live - it's cached and updated manually from time to time - so there's no point in refreshing.
                 </div>
             </div>
 
             <hr>
 
             <footer>
-                <p>Just for fun - totaly not worth suing me for :) Questions: <a href="duncan.lock@gmail.com">duncan.lock@gmail.com</a></p>
+                <p><sup>*</sup> Just for fun - totally not worth suing me for :) Questions? Answers: <a href="duncan.lock@gmail.com">duncan.lock@gmail.com</a></p>
             </footer>
 
         </div> <!-- /container -->
@@ -113,15 +414,43 @@
               // ID of the element in which to draw the chart.
               element: 'articles-published-over-time',
               // Chart data records -- each entry in this array corresponds to a point on the chart.
-              data: [ ${atricles_published_data} ],
+              data: [ ${articles_published_data} ],
               // The name of the data record attribute that contains x-values.
               xkey: 'date',
               // A list of names of data record attributes that contain y-values.
               ykeys: ['value'],
               // Labels for the ykeys -- will be displayed when you hover over the chart.
-              labels: ['Value']
+              labels: ['Articles Pulished']
             });
 
+            new Morris.Line({
+              element: 'articles-published-all-time',
+              data: [ ${articles_published_data_all_time} ],
+              xkey: 'date',
+              ykeys: ['value'],
+              labels: ['Articles Pulished']
+            });
+
+            new Morris.Bar({
+              element: 'articles-published-by-year',
+              data: [ ${articles_published_by_year} ],
+              xkey: 'year',
+              ykeys: ['value'],
+              labels: ['Articles Pulished']
+            });
+
+            new Morris.Bar({
+              element: 'articles-published-by-weekday',
+              data: [ ${articles_published_by_weekday} ],
+              xkey: 'day',
+              ykeys: ['value'],
+              labels: ['Articles Pulished']
+            });
+
+            new Morris.Donut({
+              element: 'word-frequency-by-length',
+              data: [ ${word_freq_by_length} ]
+            });
 
         </script>
     </body>

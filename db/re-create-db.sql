@@ -1,4 +1,3 @@
-
 DROP DATABASE IF EXISTS `seance`;
 CREATE DATABASE `seance`
 CHARACTER SET utf8
@@ -7,13 +6,22 @@ COLLATE utf8_unicode_ci
 
 USE `seance`;
 
+-- GRANT USAGE ON *.* TO 'seance'@'localhost';
+-- DROP USER 'seance'@'localhost';
+
+-- CREATE USER 'seance'@'localhost' IDENTIFIED BY 'seancep4db';
+-- GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP
+-- ON `seance`.*
+-- TO 'seance'@'localhost';
+
+
 DROP TABLE IF EXISTS `articles`;
 CREATE TABLE `articles` (
   `id` varchar(20) NOT NULL,
   `title` text DEFAULT NULL,
   `url` text DEFAULT NULL,
   `post_date` date DEFAULT NULL,
-  `desc` text DEFAULT NULL,
+  `description` text DEFAULT NULL,
   `body` text DEFAULT NULL,
   `author_id` varchar(20) DEFAULT NULL,
   `author_name` text DEFAULT NULL,
@@ -21,12 +29,15 @@ CREATE TABLE `articles` (
   `min_read` int(11) DEFAULT NULL,
   `category_slug` text DEFAULT NULL,
   `category_name` text DEFAULT NULL,
+  `word_count` int DEFAULT NULL,
+  `word_freq` text DEFAULT NULL,
   PRIMARY KEY (`id`)
 )
 ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
-CREATE  TABLE `seance`.`authors` (
+DROP TABLE IF EXISTS `authors`;
+CREATE  TABLE `authors` (
   `id` VARCHAR(20) NOT NULL ,
   `name` TEXT NOT NULL ,
   `url` TEXT NOT NULL ,
@@ -35,6 +46,16 @@ CREATE  TABLE `seance`.`authors` (
 ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
+
+DROP TABLE IF EXISTS `word_frequency`;
+CREATE  TABLE `word_frequency` (
+  `word` VARCHAR(150) NOT NULL ,
+  `freq` int NOT NULL ,
+  `length` int NOT NULL ,
+  PRIMARY KEY (`word`)
+)
+ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
 
 -- Populate the Articles table with some saved pre-scraped test data
 
