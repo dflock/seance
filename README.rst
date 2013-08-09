@@ -26,9 +26,9 @@ If you really want to, you'll need a vitrualenv with the stuff from ``requiremen
 
 - Create the MySQL database using ``/db/re-create-db.sql``
 - Change the MySQL login credentials in the following files to match your setup (yes, I know):
-    - post_process_data.py
-    - frontend/index.html
-    - seance_scrapy/seance_scrapy/pipelines.py
+  - post_process_data.py
+  - frontend/index.html
+  - seance_scrapy/seance_scrapy/pipelines.py
 
 - To start the crawl:
 
