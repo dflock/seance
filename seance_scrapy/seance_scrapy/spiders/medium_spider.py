@@ -2,17 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from scrapy.selector import HtmlXPathSelector
-# from scrapy.selector import XmlXPathSelector
-# from scrapy.spider import BaseSpider
-
 from scrapy.contrib.spiders import SitemapSpider
 from seance_scrapy.items import MediumArticle
 
 import datetime
-
 from bs4 import BeautifulSoup
-import re
-from collections import Counter
 
 class MediumSpider(SitemapSpider):
     name = "medium"
@@ -24,9 +18,9 @@ class MediumSpider(SitemapSpider):
     items = []
 
     def parse(self, response):
-        # Load posts.xml and churn through it, one article at a time, collecting and populating MediumArticle items as we find them.
+        # When this gets called, we're processing an article
+        # Collecting and populating a MediumArticle item for each one.
         hxs = HtmlXPathSelector(response)
-
         item = MediumArticle()
 
         item['url'] = response.url
@@ -52,8 +46,9 @@ class MediumSpider(SitemapSpider):
         except IndexError:
             item['author_url'] = None
 
-
+        # Select a subset of the page to work on to the rest
         article_meta = hxs.select('//ul[@class="post-meta"]')
+        # TODO: Catehory doesn't seem to get populated - is this XPath wrong?
         # Category isn't always set, so don't rely on it being there
         try:
             item['category_name'] = article_meta.select('./li[1]//a[@data-collection-slug]/text()').extract()[0]
@@ -72,5 +67,4 @@ class MediumSpider(SitemapSpider):
             item['min_read'] = None
 
         self.items.append(item)
-
         return self.items

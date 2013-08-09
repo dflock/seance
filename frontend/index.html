@@ -1,7 +1,7 @@
 <%
 
     #
-    #
+    # This is a standalone mako template.
     # This code extracts all the data from the database required to build this page and preps it ready for use below.
     #
     #
@@ -9,7 +9,8 @@
     # Setup DB connection
     import MySQLdb as mdb
     import MySQLdb.cursors
-
+    # TODO: Replace this with a central config file.
+    # CHANGME: change this to match your local MySQL setup
     con = MySQLdb.connect(host = "localhost", user = "root", passwd = "dflp4root", db = "seance", cursorclass=MySQLdb.cursors.DictCursor, charset='utf8', use_unicode=True)
     cur = con.cursor()
 
@@ -164,7 +165,7 @@
     </head>
     <body>
         <div class="container">
-
+            <span id="forkongithub"><a href="https://github.com/dflock/seance">Fork me on GitHub</a></span>
             <div class="hero-unit">
                 <img src="img/crystal_ball.png" alt="" />
                 <h1>Welcome to the Séance!</h1>

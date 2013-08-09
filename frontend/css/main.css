@@ -21,11 +21,11 @@ sup {
 
 /*
 
-	Fork Me on GitHub Ribbon
+	Fork Me on GitHub Ribbon, from here: http://codepo8.github.io/css-fork-on-github-ribbon/;
 
  */
 
-/*#forkongithub a{
+#forkongithub a {
 	background: #000;
 	color: #fff;
 	text-decoration: none;
@@ -38,12 +38,12 @@ sup {
 	position: relative;
 	transition: 0.5s;
 }
-#forkongithub a:hover{
-	background:#555;
+#forkongithub a:hover {
+	background: #888;
 	color: #fff;
 }
 #forkongithub a::before,
-#forkongithub a::after{
+#forkongithub a::after {
 	content: "";
 	width: 100%;
 	display: block;
@@ -53,12 +53,12 @@ sup {
 	height: 1px;
 	background: #fff;
 }
-#forkongithub a::after{
+#forkongithub a::after {
 	bottom: 1px;
 	top: auto;
 }
-@media screen and (min-width:800px){
-	#forkongithub{
+@media screen and (min-width:800px) {
+	#forkongithub {
 		position: absolute;
 		display: block;
 		top: 0;
@@ -67,7 +67,7 @@ sup {
 		overflow: hidden;
 		height: 200px;
 	}
-	#forkongithub a{
+	#forkongithub a {
 		width: 200px;
 		position: absolute;
 		top: 60px;
@@ -77,4 +77,3 @@ sup {
 		box-shadow: 3px 3px 8px rgba(0,0,0,0.8);
 	}
 }
-*/

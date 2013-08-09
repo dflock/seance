@@ -14,6 +14,8 @@ import MySQLdb.cursors
 class SeanceScrapyPipeline(object):
 
     def __init__(self):
+        # TODO: Replace this with a central config file.
+        # CHANGME: change this to match your local MySQL setup
         self.dbpool = adbapi.ConnectionPool('MySQLdb', db='seance',
                 user='root', passwd='dflp4root', cursorclass=MySQLdb.cursors.DictCursor,
                 charset='utf8', use_unicode=True)
@@ -27,7 +29,7 @@ class SeanceScrapyPipeline(object):
 
     def _conditional_insert(self, tx, item):
         # create record if doesn't exist.
-        # all this block run on it's own thread
+        # all this block runs on it's own thread
         tx.execute("select * from articles where id = %s", (item['id']))
         result = tx.fetchone()
         if result:
